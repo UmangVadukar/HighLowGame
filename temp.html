@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Higher Lower Game</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Roboto', Arial, sans-serif;
+            background: #000;
+            overflow: hidden;
+        }
+        .item-name {
+            font-family: 'Montserrat', Arial, sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .visitor-count {
+            font-family: 'Montserrat', Arial, sans-serif;
+            font-weight: 600;
+        }
+        .choice-btn {
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
+        .game-container {
+            height: 100vh;
+            display: flex;
+            position: relative;
+        }
+
+        .game-content {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            position: relative;
+        }
+
+        .option-card {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .option-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1;
+        }
+
+        .option-card.correct::before {
+            background: rgba(16, 185, 129, 0.6);
+            animation: correctFlash 1s ease;
+        }
+
+        .option-card.incorrect::before {
+            background: rgba(239, 68, 68, 0.6);
+            animation: incorrectShake 0.6s ease;
+        }
+
+        .card-content {
+            position: relative;
+            z-index: 2;
+            padding: 40px;
+        }
+
+        @keyframes correctFlash {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 0.8; }
+        }
+
+        @keyframes incorrectShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .item-name {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        .has-text {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+        }
+
+        .visitor-count {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #fbbf24;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        .count-description {
+            font-size: 1.1rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+            margin-bottom: 30px;
+        }
+
+        .vs-divider {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            color: black;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.5rem;
+            z-index: 10;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .choice-btn {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid white;
+            color: white;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            margin: 10px;
+            cursor: pointer;
+            min-width: 140px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+        }
+
+        .choice-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .choice-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .choice-text {
+            font-size: 1rem;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+        }
+
+        .score-overlay {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            z-index: 100;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        .high-score-overlay {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            z-index: 100;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        .game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 1000;
+        }
+
+        .game-over h2 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .final-score {
+            font-size: 2.5rem;
+            color: #fbbf24;
+            margin: 20px 0;
+        }
+
+        .play-again-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            color: white;
+            padding: 20px 50px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .play-again-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .profile-pic-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .profile-pic {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            background: #222;
+        }
+    /* Responsive styles for mobile */
+    @media (max-width: 768px) {
+        .game-content {
+            flex-direction: column;
+            height: auto;
+            min-height: 100vh;
+        }
+        .option-card {
+            min-height: 300px;
+            height: 50vh;
+            border-right: none !important;
+            border-bottom: 2px solid #222;
+            font-size: 1rem;
+        }
+        .option-card:last-child {
+            border-bottom: none;
+        }
+        .card-content {
+            padding: 20px 0;
+        }
+        .profile-pic {
+            width: 70px;
+            height: 70px;
+        }
+        .item-name {
+            font-size: 1.1rem;
+        }
+        .visitor-count {
+            font-size: 1.3rem;
+        }
+        .choice-btn {
+            font-size: 1rem;
+            padding: 8px 18px;
+            margin: 8px 4px;
+        }
+        .game-container {
+            padding: 0;
+            min-height: 100vh;
+        }
+    }
+    
+    /* Extra small devices */
+    @media (max-width: 480px) {
+        .profile-pic {
+            width: 50px;
+            height: 50px;
+        }
+        .item-name {
+            font-size: 1rem;
+        }
+        .visitor-count {
+            font-size: 1.1rem;
+        }
+        .choice-btn {
+            font-size: 0.95rem;
+            padding: 7px 12px;
+        }
+        .card-content {
+            padding: 10px 0;
+        }
+    }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="score-overlay">
+            Score: <span id="score">0</span>
+        </div>
+        <div class="high-score-overlay">
+            High Score: <span id="highScore">0</span>
+        </div>
+
+        <div id="gameContent" class="game-content">
+            <div class="option-card" id="leftCard" style="border-right: 2px solid; opacity: 75%;">
+                <div class="card-content">
+                    <div class="profile-pic-wrapper">
+                        <img id="leftProfilePic" class="profile-pic" src="" alt="Profile Picture">
+                    </div>
+                    <div class="item-name" id="leftName">"Google"</div>
+                    <div class="has-text">has</div>
+                    <div class="visitor-count" id="leftCount">8.5B</div>
+                    <div class="count-description">Subscribers</div>
+                </div>
+            </div>
+
+            <div class="vs-divider">VS</div>
+
+            <div class="option-card" id="rightCard" style="opacity: 75%;">
+                <div class="card-content">
+                    <div class="profile-pic-wrapper">
+                        <img id="rightProfilePic" class="profile-pic" src="" alt="Profile Picture">
+                    </div>
+                    <div class="item-name" id="rightName">"YouTube"</div>
+                    <div class="has-text">has</div>
+                    <div class="visitor-count" id="rightCount">???</div>
+                    <div class="count-description">subscribers than Google</div>
+                    <div class="choice-text" id="choiceText"></div>
+                    <div>
+                        <button class="choice-btn" onclick="makeChoice('higher')">
+                            Higher <i class="fas fa-arrow-up"></i>
+                        </button>
+                        <button class="choice-btn" onclick="makeChoice('lower')">
+                            Lower <i class="fas fa-arrow-down"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="gameOver" class="game-over d-none" style="background-image: url('minion.webp'); background-repeat: no-repeat; background-size: cover; object-fit: cover;">
+            <h2><i class="fas fa-trophy"></i> Game Over!</h2>
+            <div class="final-score">Final Score: <span id="finalScore">0</span></div>
+            <div class="mb-4">
+                <span id="gameOverMessage">Good try! Keep playing to improve your score.</span>
+            </div>
+            <button class="play-again-btn" onclick="startNewGame()">
+                <i class="fas fa-play"></i> Play Again
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Load YouTube data
+    let channelData = [];
+    fetch('channels.json')
+        .then(response => response.json())
+        .then(data => {
+            // Filter out entries without name or subscribers
+            channelData = data.filter(item => item.name && item.subscribers);
+            // Sort by subscribers descending (optional)
+            channelData.sort((a, b) => b.subscribers - a.subscribers);
+            initGame();
+        });
+
+    let currentScore = 0;
+    let highScore = localStorage.getItem('higherLowerHighScore') || 0;
+    let currentLeft = null;
+    let currentRight = null;
+    let gameActive = true;
+
+    function initGame() {
+        document.getElementById('highScore').textContent = highScore;
+        startNewRound();
+    }
+
+    function startNewRound() {
+        gameActive = true;
+        document.getElementById('leftCard').className = 'option-card';
+        document.getElementById('rightCard').className = 'option-card';
+
+        currentLeft = currentRight || getRandomChannel();
+        currentRight = getRandomChannel();
+        while (currentRight.id === currentLeft.id) {
+            currentRight = getRandomChannel();
+        }
+
+        updateCard('left', currentLeft, true);
+        updateCard('right', currentRight, false);
+
+        const buttons = document.querySelectorAll('.choice-btn');
+        buttons.forEach(btn => btn.disabled = false);
+    }
+
+    function updateCard(side, channel, showSubscribers) {
+        const card = document.getElementById(`${side}Card`);
+        const nameEl = document.getElementById(`${side}Name`);
+        const countEl = document.getElementById(`${side}Count`);
+        const profilePicEl = document.getElementById(`${side}ProfilePic`);
+
+        card.style.backgroundImage = `url("${channel.logo}")`;
+
+        // Set profile picture
+        profilePicEl.src = channel.logo;
+
+        nameEl.textContent = `"${channel.name}"`;
+
+        if (showSubscribers) {
+            countEl.textContent = channel.subscribers.toLocaleString();
+        } else {
+            countEl.textContent = '???';
+        }
+
+        if (side === 'right') {
+            const description = card.querySelector('.count-description');
+            if (description) {
+                description.textContent = `Subscribers than ${currentLeft.name}`;
+            }
+        }
+    }
+
+    function getRandomChannel() {
+        return channelData[Math.floor(Math.random() * channelData.length)];
+    }
+
+    function makeChoice(choice) {
+        if (!gameActive) return;
+
+        gameActive = false;
+        const buttons = document.querySelectorAll('.choice-btn');
+        buttons.forEach(btn => btn.disabled = true);
+
+        // Animate the reveal of the right value
+        const rightCountEl = document.getElementById('rightCount');
+        let start = 0;
+        const end = currentRight.subscribers;
+        const duration = 800; // ms
+        const startTime = performance.now();
+
+        function animateCount(now) {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const value = Math.floor(progress * (end - start) + start);
+            rightCountEl.textContent = value.toLocaleString();
+            if (progress < 1) {
+                requestAnimationFrame(animateCount);
+            } else {
+                rightCountEl.textContent = end.toLocaleString();
+                // After animation, show correct/incorrect effect
+                setTimeout(() => {
+                    const isHigher = currentRight.subscribers > currentLeft.subscribers;
+                    const isCorrect = (choice === 'higher' && isHigher) || (choice === 'lower' && !isHigher);
+                    if (isCorrect) {
+                        document.getElementById('rightCard').classList.add('correct');
+                        currentScore += 1;
+                        updateScore();
+                        setTimeout(() => {
+                            startNewRound();
+                        }, 1000);
+                    } else {
+                        document.getElementById('rightCard').classList.add('incorrect');
+                        updateScore();
+                        setTimeout(() => {
+                            showGameOver();
+                        }, 1000);
+                    }
+                }, 300); // Wait 300ms after animation before showing green/red
+            }
+        }
+        requestAnimationFrame(animateCount);
+    }
+
+    function updateScore() {
+        document.getElementById('score').textContent = currentScore;
+        if (currentScore > highScore) {
+            highScore = currentScore;
+            localStorage.setItem('higherLowerHighScore', highScore);
+            document.getElementById('highScore').textContent = highScore;
+        }
+    }
+
+    function showGameOver() {
+        document.getElementById('gameContent').classList.add('d-none');
+        document.getElementById('gameOver').classList.remove('d-none');
+        document.getElementById('finalScore').textContent = currentScore;
+
+        let message = "Good try! Keep playing to improve your score.";
+        if (currentScore >= 20) {
+            message = "Amazing! You're a YouTube expert! 🎉";
+        } else if (currentScore >= 15) {
+            message = "Excellent work! You know your creators! 🌟";
+        } else if (currentScore >= 10) {
+            message = "Great job! You're getting good at this! 👏";
+        } else if (currentScore >= 5) {
+            message = "Not bad! Keep practicing! 💪";
+        }
+
+        document.getElementById('gameOverMessage').textContent = message;
+    }
+
+    function startNewGame() {
+        currentScore = 0;
+        currentLeft = null;
+        currentRight = null;
+
+        document.getElementById('gameContent').classList.remove('d-none');
+        document.getElementById('gameOver').classList.add('d-none');
+
+        updateScore();
+        startNewRound();
+    }
+</script>
+</body>
+</html>
